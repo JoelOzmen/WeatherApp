@@ -83,7 +83,7 @@ struct ContentView: View {
             }
         }
         .alert(isPresented: $viewModel.errorCatch) {
-            return Alert(title: Text("Could not fetch data"), message: Text("Invalid input"), dismissButton: .default(Text("Dismiss")))
+            return Alert(title: Text("Invalid input"), message: Text("Could not fetch data"), dismissButton: .default(Text("Dismiss")))
         }
         .onChange(of: viewModel.lon) { n in
             disableSubmit()

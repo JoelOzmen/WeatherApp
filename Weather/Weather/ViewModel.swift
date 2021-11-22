@@ -24,12 +24,21 @@ class ViewModel: ObservableObject{
     @Published var lon: Float!
     @Published var lat: Float!
     @Published var allForecasts: AllForecasts? //Listan med all info
+    @Published var errorCatch: Bool = false
+    @Published var disableButton: Bool = true
     let saveKey = "SavedData" //För att spara data
     
     func requestWeather(){
         Task {
-            allForecasts = await fetchData(lon: lon, lat: lat)
-            await saveData()
+            do{
+                allForecasts = try await fetchData(lon: lon, lat: lat)
+                await saveData()
+            }
+            catch{
+                DispatchQueue.main.async {
+                    self.errorCatch = true
+                }
+            }
         }
     }
     
@@ -53,8 +62,7 @@ class ViewModel: ObservableObject{
         }
     }
     
-    func fetchData(lon: Float, lat: Float) async -> AllForecasts? {
-        do {
+    func fetchData(lon: Float, lat: Float) async throws -> AllForecasts? {
             //Gör Stringen till en URLstring
             guard let urlString = URL(string: "https://opendata-download-metfcst.smhi.se/api/category/pmp3g/version/2/geotype/point/lon/\(lon)/lat/\(lat)/data.json")
             else{throw FetchError.runtimeError("Could not fetch url")}
@@ -83,7 +91,5 @@ class ViewModel: ObservableObject{
                 forecastList.append(Forecast(time: time, temp: temperature, icon: icon))
             }
             return AllForecasts(forecastData.approvedTime, forecastList)
-        }
-        catch {return nil}
     }
 }

@@ -1,27 +1,18 @@
-//
-//  Network.swift
-//  Weather
-//
-//  Created by Joel Özmen on 2021-11-22.
-//
-
 import Foundation
 import Network
 
-struct Networking{
-    
-    let monitor = NWPathMonitor()
-    
-    monitor.pathUpdateHandler = { path in
-        if path.status == .satisfied {
-            print("We're connected!")
-        }
-        else {
-            print("No connection.")
-        }
-        print(path.isExpensive)
-    }
-    
+final class Network: ObservableObject{
+    let monitor =  NWPathMonitor()
     let queue = DispatchQueue(label: "Monitor")
-    monitor.start(queue: queue)
+    
+    @Published var Connected = true
+    
+    init(){
+        monitor.pathUpdateHandler = { [weak self] path in
+            DispatchQueue.main.async {
+                self?.Connected = path.status == .satisfied ? true : false
+            }
+        }
+        monitor.start(queue: queue)
+    }
 }

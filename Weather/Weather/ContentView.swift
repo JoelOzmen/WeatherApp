@@ -2,13 +2,16 @@ import SwiftUI
 
 struct ContentView: View {
     @StateObject var viewModel = ViewModel()
-    
+    @ObservedObject var monitor = Network()
     @FocusState private var focused: Bool
     
     var body: some View {
         VStack{
             //Rubrik
             VStack{
+                Image(systemName: monitor.Connected ? "wifi" : "wifi.slash").font(.system(size: 20))
+                Text(monitor.Connected ? "Connected" : "Not connected!")
+                
                 Text("Weather forecast")
                     .fontWeight(.bold)
                     .font(.system(size: 30))
@@ -75,8 +78,27 @@ struct ContentView: View {
                     })
                     .cornerRadius(12)
                     .shadow(color: .black, radius: 1, x: 0, y: 1)
+                    .disabled(viewModel.disableButton)
                 Spacer()
             }
+        }
+        .alert(isPresented: $viewModel.errorCatch) {
+            return Alert(title: Text("Could not fetch data"), message: Text("Invalid input"), dismissButton: .default(Text("Dismiss")))
+        }
+        .onChange(of: viewModel.lon) { n in
+            disableSubmit()
+        }
+        .onChange(of: viewModel.lat) { n in
+            disableSubmit()
+        }
+    }
+    
+    func disableSubmit(){
+        if(viewModel.lat == nil || viewModel.lon == nil){
+                viewModel.disableButton = true
+        }
+        else{
+            viewModel.disableButton = false
         }
     }
     
